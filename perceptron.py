@@ -7,6 +7,8 @@
 ########################
 
 # IMPORTS
+import os
+
 import numpy as np
 import random as rd
 import functools
@@ -35,15 +37,18 @@ class Perceptron():
 
     """
 
-    def __init__(self, size: int, theta: float, epsilon: float):
+    def __init__(self, size: int, theta: float, epsilon: float, weight=None):
 
         self.size = size
         self.theta = theta
         self.epsilon = epsilon
-
-        self.weight = np.random.rand(size)
-        self.normalize_weight()
-        # self.weight = np.ones(size)
+        
+        if weight is None:
+            self.weight = np.random.rand(size)
+            self.normalize_weight()
+            # self.weight = np.ones(size)
+        else:
+            self.weight = np.array(weight)
 
         self.decision_function = functools.partial(thresholdFunction, threshold=0.5)
 
@@ -52,7 +57,7 @@ class Perceptron():
 
         chain = "### Perceptron ###\n"
         chain += f"size: {self.size}\n"
-        chain += f"weight = \n{self.weight}\n"
+        chain += f"weight = \n{self.weight}"
         return chain
 
     def normalize_weight(self):
@@ -76,9 +81,17 @@ class Perceptron():
     def pickRandomData(self, dataset):
         return rd.choice(dataset.data)
 
-    def learnErr(self, error_max, training_set):
+    def learnErr(self, error_max: float, training_set: list, use_decision:bool=False):
+        """ Learning function of the perceptron, based on error in the evaluation.
+        
+        INPUTS:
+                The sum of absolute errors (for each instance) that we want to be under
+                The instances with their label
+                OPTION: if we want to use the decision (values 1 and 0) instead
+                    of the precise evaluation.
+        """
 
-        totalErr = error_max + 1
+        totalErr = error_max + 1 # Just some init trickery
         count = 0
         
         while totalErr > error_max:
@@ -88,7 +101,9 @@ class Perceptron():
 
             for vector, ans in training_set:
                 evaluation = self.evaluate(vector)
-                # decision = self.predict(evaluation, {})
+
+                if use_decision:
+                    evaluation = self.predict(evaluation, {})
                 
                 error = self.error(evaluation, ans)
                 self.update(error, vector)
@@ -98,6 +113,15 @@ class Perceptron():
             # print(totalErr)
         
         return count
+
+    def export(self, path, filename):
+        """ Exports the perceptron data as python variables in a custom file.
+        """
+
+        filepath = os.path.join(path, filename)
+
+        with open(filepath, "w") as p_file:
+            p_file.write(f"weights = {list(self.weight)}\nsize = {self.size}\ntheta = {self.theta}\nepsilon = {self.epsilon}")
 
 ####################################################
 ##################| FUNCTIONS |#####################

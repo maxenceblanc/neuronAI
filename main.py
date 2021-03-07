@@ -58,8 +58,8 @@ class Dataset():
 
         return chain
 
-    def shuffle(self, seed=None):
-        rd.Random(seed).shuffle(self.data)
+    def shuffle(self):
+        rd.shuffle(self.data)
 
     def pickRandomData(self):
         return rd.choice(self.data)
@@ -104,6 +104,9 @@ def getFilenames(path):
 
 
 def noiseData(ref, percent):
+    """ Takes some binary data and noises it, based on a percentage.
+    Each binary element has a percent of chance to be swapped.
+    """
 
     size   = len(ref)
     copy = np.array(ref)
@@ -116,14 +119,24 @@ def noiseData(ref, percent):
     return copy
 
 
-def testNoisedData(data, percent, amount):
+def testNoisedData(perceptron, data, percent: int, amount: int):
+    """ Tests a given perceptron on a noised instance a given amount of times
+    and returns the amount of times the perceptron was wrong.
+
+    INPUTS:
+            A perceptron
+            A testing instance with it's true label
+            Amount of noise
+            Amount of tests
+
+    """
 
     error_amount = 0
     for i in range(amount):
 
         vector = noiseData(data[0], percent)
-        evaluation = p.evaluate(vector)
-        prediction = p.predict(evaluation, {})
+        evaluation = perceptron.evaluate(vector)
+        prediction = perceptron.predict(evaluation, {})
 
 
         if prediction != data[1]:
@@ -132,38 +145,48 @@ def testNoisedData(data, percent, amount):
     return error_amount
 
 
-def generalizationNoise(dataset):
+def generalizationNoise(perceptron, dataset):
+    """ Tests the perceptron on data noised from 0 to 100%.
+    """
 
-    errorsZero = [] 
+    captions = []
 
-    for noise in range(0, 101):
-        error = testNoisedData(dataset.data[0], noise, 50)
-        errorsZero.append(error)
+    for i, instance in enumerate(dataset.data):
+        errors = [] 
 
-    errorsUn = [] 
+        for noise in range(0, 101):
+            error = testNoisedData(perceptron, instance, noise, 50)
+            errors.append(error)
 
-    for noise in range(0, 101):
-        error = testNoisedData(dataset.data[1], noise, 50)
-        errorsUn.append(error)
+        plt.plot(range(101), errors)
 
-    print(errorsZero)
-    print(errorsUn)
+        captions.append(f"{int(i)}")
 
-    
-    plt.plot(range(101), errorsZero, "r")
-    plt.plot(range(101), errorsUn, "b")
+
+    # plt.plot(range(101), errorsZero, "r")
+    # plt.plot(range(101), errorsUn, "b")
+
+    caption_tuple = (caption for caption in captions)
+    # print(captions)
+    # tuple()
+
+    plt.legend(captions,
+           loc='upper right')
+
     plt.ylabel('error amount')
     plt.xlabel('noise %')
     plt.show()
 
 
 def printArrayFormated(array, line_length):
-    chaine = ""
+    chaine = "[\n"
 
     for i, elt in enumerate(array):
         chaine += f"{elt}, "
         if (i+1) % line_length == 0:
             chaine += "\n"
+    
+    chaine += "]"
 
     print(chaine)
 
@@ -172,9 +195,14 @@ def printArrayFormated(array, line_length):
 ####################################################
 
 DATASET_FOLDER = "datasets"
-DATASET_NAME = "zero_un"
+DATASET_NAME = "zero_nine"
 
 DATASET_PATH = os.path.join(DATASET_FOLDER, DATASET_NAME)
+
+
+PERCEPTRON_FOLDER = "perceptrons"
+
+RANDOM_SEED = 0
 
 ####################################################
 ####################| PROGRAM |#####################
@@ -182,37 +210,91 @@ DATASET_PATH = os.path.join(DATASET_FOLDER, DATASET_NAME)
 
 if __name__ == '__main__':
 
-    ### Getting the dataset ###
+    # Setting the seed for random generators
+    rd.seed(RANDOM_SEED)
+    np.random.seed(RANDOM_SEED)
+
+    ### Preparing the dataset ###
 
     dataset = Dataset()
     dataset.datasetFromFiles(DATASET_PATH)
-    dataset.shuffle(0)
-    # pprint.pprint(dataset.data)
+    dataset.shuffle()
 
 
+    # # Q1.
 
-    ### Init the perceptron ###
+    # ### Init the perceptron ###
+    # p1 = perceptron.Perceptron(48, 0.5, 0.01)
 
-    p = perceptron.Perceptron(48, 0.5, 0.01)
-    # pprint.pprint(p)
+    # # Apprentissage
+    # count = p1.learnErr(0, dataset.data, True)
+    # print(f"appris en {count} tours.")
 
-    pprint.pprint(p)
+    # generalizationNoise(p1, dataset)
+    
 
-    # Apprentissage
-    count = p.learnErr(0.0000001, dataset.data)
-    print(f"appris en {count} tours.")
+    # # Q2.
 
-    pprint.pprint(p)
+    # ### Init the perceptron ###
+    # p2 = perceptron.Perceptron(48, 0.5, 0.01)
 
-    pprint.pprint(p.evaluate(dataset.data[1][0]))
-    # pprint.pprint(dataset.data[1][0])
+    # # Apprentissage
+    # count = p2.learnErr(0.001, dataset.data, False)
+    # print(f"appris en {count} tours.")
+
+    # generalizationNoise(p2, dataset)
+
+
+    # Q3.
+    # 2 approaches:
+    # - 1) training each perceptron individually
+    # - 2) training the model as a whole, updating the two faulty perceptrons when an error is made
+
+    ### reset the dataset and no shuffle
+
+    dataset = Dataset()
+    dataset.datasetFromFiles(DATASET_PATH)
+
+    # dataset.data.sort(lambda)
+
+    ### Init the perceptrons ###
+    
+    perceptrons = [perceptron.Perceptron(48, 0.5, 0.01) for i in range(10)]
+    
+    ### Approach n°1 ###
+
+    for i, perceptron in enumerate(perceptrons):
+
+        print(f"Generating training set for perceptron {i} ...")
+
+        # Tweaking dataset for approach n°1:
+        dataset_train = Dataset()
+        dataset_train.data = []
+        
+        for instance in dataset.data:
+
+            dataset_train.data.append((instance[0], 1 if instance[1] == i else 0))
+
+
+        ### Print to check the generation of training dataset
+
+        for instance in dataset_train.data:
+            print()
+            printArrayFormated(instance[0], 6)
+            print("->", instance[1])
+
+        
+        ### Apprentissage
+        count = perceptron.learnErr(0.001, dataset_train.data)
+        print(f"Perceptron n°{i}, apprentissage en {count} tours.")
+        print(perceptron)
+
+        perceptron.export(PERCEPTRON_FOLDER, "perceptron0.py")
+
+        generalizationNoise(perceptron, dataset_train)
+
+        break
 
     
-    # printArrayFormated(noiseData(dataset.data[1][0], 100), 6)
-    # pprint.pprint(p.evaluate(noiseData(dataset.data[1][0], 100)))
-    # pprint.pprint(testNoisedData(dataset.data[1], 100, 1))
 
 
-
-    generalizationNoise(dataset)
-    
