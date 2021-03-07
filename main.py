@@ -250,12 +250,9 @@ if __name__ == '__main__':
     # - 1) training each perceptron individually
     # - 2) training the model as a whole, updating the two faulty perceptrons when an error is made
 
-    ### reset the dataset and no shuffle
+    ### Sorting the dataset for human readability and ploting
 
-    dataset = Dataset()
-    dataset.datasetFromFiles(DATASET_PATH)
-
-    # dataset.data.sort(lambda)
+    dataset.data.sort(key=lambda instance: instance[1])
 
     ### Init the perceptrons ###
     
@@ -278,22 +275,32 @@ if __name__ == '__main__':
 
         ### Print to check the generation of training dataset
 
-        for instance in dataset_train.data:
-            print()
-            printArrayFormated(instance[0], 6)
-            print("->", instance[1])
+        # for instance in dataset_train.data:
+        #     print()
+        #     printArrayFormated(instance[0], 6)
+        #     print("->", instance[1])
 
         
         ### Apprentissage
         count = perceptron.learnErr(0.001, dataset_train.data)
         print(f"Perceptron n°{i}, apprentissage en {count} tours.")
-        print(perceptron)
 
-        perceptron.export(PERCEPTRON_FOLDER, "perceptron0.py")
+        perceptron.export(PERCEPTRON_FOLDER, f"perceptron{i}.py")
 
-        generalizationNoise(perceptron, dataset_train)
+        # generalizationNoise(perceptron, dataset_train)
 
-        break
+    for i in range(len(dataset.data)):
+
+        print(f"Test on {i} :")
+
+        perceptrons_ans = [perceptron.evaluate(dataset.data[i][0]) for perceptron in perceptrons]
+        print(perceptrons_ans)
+        print(np.argmax(perceptrons_ans))
+
+        print()
+
+
+        
 
     
 
