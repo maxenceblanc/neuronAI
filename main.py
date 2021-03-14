@@ -23,19 +23,6 @@ import Network
 
 ''' TO DO LIST
 
-    
-Partie 1 : attentes de l'enseignant dans le rendu : 
-    
-1 courbe qui montre le suivi de l'apprentissage = 1 courbe sur laquelle on va afficher en fonction du temps l'erreur totale
-
-erreur totale = somme des valeurs absolues à chaque étape de l'erreur pour l'entrée 0 ET l'érreur pour l'entrée 1
-
-
-prévisions : le réseau arrive a une erreur totale de 0 (en valeur absolue) en 1 à 25 itérations
-
-
-1 courbe qui correspond au TEST (test signifie que le réseau n'apprends plus) du réseau face aux exemples bruites
-
 '''
 
 
@@ -140,7 +127,8 @@ def printArrayFormated(array, line_length):
 ####################################################
 
 DATASET_FOLDER = "datasets"
-DATASET_NAME = "zero_nine"
+DATASET_NAME = "zero_one"
+# DATASET_NAME = "zero_nine" # For part 3
 
 DATASET_PATH = os.path.join(DATASET_FOLDER, DATASET_NAME)
 
@@ -166,16 +154,16 @@ if __name__ == '__main__':
     dataset.shuffle()
 
 
-    # # Q1.
+    # Q1.
 
-    # ### Init the perceptron ###
-    # p1 = perceptron.Perceptron(48, 0.5, 0.01)
+    ### Init the perceptron ###
+    p1 = Perceptron.Perceptron(48, 0.5, 0.01)
 
-    # # Apprentissage
-    # count = p1.learnErr(0, dataset.data, True)
-    # print(f"appris en {count} tours.")
+    # Apprentissage
+    count = p1.learnErr(0, dataset.data, True)
+    print(f"appris en {count} tours.")
 
-    # generalizationNoise(p1, dataset)
+    generalizationNoise(p1, dataset)
     
 
     # # Q2.
@@ -190,63 +178,63 @@ if __name__ == '__main__':
     # generalizationNoise(p2, dataset)
 
 
-    # Q3.
-    # 2 approaches:
-    # - 1) training each perceptron individually
-    # - 2) training the model as a whole, updating the two faulty perceptrons when an error is made
+    # # Q3.
+    # # 2 approaches:
+    # # - 1) training each perceptron individually
+    # # - 2) training the model as a whole, updating the two faulty perceptrons when an error is made
 
-    ### Sorting the dataset for human readability and ploting
+    # ### Sorting the dataset for human readability and ploting
 
-    dataset.data.sort(key=lambda instance: instance[1])
+    # dataset.data.sort(key=lambda instance: instance[1])
 
-    ### Init the perceptrons ###
+    # ### Init the perceptrons ###
 
-    network_1 = Network.Network([Perceptron.Perceptron(48, 0.5, 0.01) for i in range(10)])
-    network_2 = Network.Network([Perceptron.Perceptron(48, 0.5, 0.01) for i in range(10)])
+    # network_1 = Network.Network([Perceptron.Perceptron(48, 0.5, 0.01) for i in range(10)])
+    # network_2 = Network.Network([Perceptron.Perceptron(48, 0.5, 0.01) for i in range(10)])
     
-    ### Approach n°1 ###
+    # ### Approach n°1 ###
 
-    for i, perceptron in enumerate(network_1.perceptrons):
+    # for i, perceptron in enumerate(network_1.perceptrons):
 
-        print(f"Generating training set for perceptron {i} ...")
+    #     print(f"Generating training set for perceptron {i} ...")
 
-        # Tweaking dataset for approach n°1:
-        dataset_train = Dataset.Dataset()
-        dataset_train.data = []
+    #     # Tweaking dataset for approach n°1:
+    #     dataset_train = Dataset.Dataset()
+    #     dataset_train.data = []
         
-        for instance in dataset.data:
+    #     for instance in dataset.data:
 
-            dataset_train.data.append((instance[0], 1 if instance[1] == i else 0))
+    #         dataset_train.data.append((instance[0], 1 if instance[1] == i else 0))
 
 
-        ### Print to check the generation of training dataset
+    #     ### Print to check the generation of training dataset
 
-        # for instance in dataset_train.data:
-        #     print()
-        #     printArrayFormated(instance[0], 6)
-        #     print("->", instance[1])
+    #     # for instance in dataset_train.data:
+    #     #     print()
+    #     #     printArrayFormated(instance[0], 6)
+    #     #     print("->", instance[1])
 
         
-        ### Apprentissage
-        count = perceptron.learnErr(0.001, dataset_train.data)
-        print(f"Perceptron n°{i}, apprentissage en {count} tours.")
+    #     ### Apprentissage
+    #     count = perceptron.learnErr(0.001, dataset_train.data)
+    #     print(f"Perceptron n°{i}, apprentissage en {count} tours.")
 
-        perceptron.export(PERCEPTRON_FOLDER, f"perceptron{i}.py")
+    #     perceptron.export(PERCEPTRON_FOLDER, f"perceptron{i}.py")
 
-        generalizationNoise(perceptron, dataset_train)
-
-
-    generalizationNoise(network_1, dataset)
+    #     generalizationNoise(perceptron, dataset_train)
 
 
-    ### Approach n°2 ###
-
-    count = network_2.learnErr(0.001, dataset.data)
+    # generalizationNoise(network_1, dataset)
 
 
-    print(f"Learned in {count} turns.")
+    # ### Approach n°2 ###
 
-    generalizationNoise(network_2, dataset)
+    # count = network_2.learnErr(0.001, dataset.data)
+
+
+    # print(f"Learned in {count} turns.")
+
+    # generalizationNoise(network_2, dataset)
 
 
 
