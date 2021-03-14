@@ -50,6 +50,8 @@ class Network():
 
         totalErr = error_max + 1 # Just some init trickery
         count = 0
+
+        errors = []
         
         while totalErr > error_max:
 
@@ -81,7 +83,9 @@ class Network():
 
                     totalErr += abs(error_answer) + abs(error_label)
 
-        return count
+            errors.append(totalErr)
+
+        return count, errors
 
 
 ####################################################

@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import Dataset
 import Perceptron
 import Network
+# import utility
 
 
 ''' TO DO LIST
@@ -95,13 +96,7 @@ def generalizationNoise(perceptron, dataset):
         captions.append(f"{int(i)}")
 
 
-    # plt.plot(range(101), errorsZero, "r")
-    # plt.plot(range(101), errorsUn, "b")
-
-    caption_tuple = (caption for caption in captions)
-    # print(captions)
-    # tuple()
-
+    # Plot options
     plt.legend(captions,
            loc='upper right')
 
@@ -122,13 +117,26 @@ def printArrayFormated(array, line_length):
 
     print(chaine)
 
+
+def plotErrors(errors):
+
+    plt.plot(range(len(errors)), errors)
+
+    plt.legend(["errors"],
+           loc='upper right')
+
+    plt.ylabel('error amount')
+    plt.xlabel('iteration')
+    plt.show()
+
+
 ####################################################
 ###################| CONSTANTS |####################
 ####################################################
 
 DATASET_FOLDER = "datasets"
-DATASET_NAME = "zero_one"
-# DATASET_NAME = "zero_nine" # For part 3
+# DATASET_NAME = "zero_one"
+DATASET_NAME = "zero_nine" # For part 3
 
 DATASET_PATH = os.path.join(DATASET_FOLDER, DATASET_NAME)
 
@@ -154,43 +162,45 @@ if __name__ == '__main__':
     dataset.shuffle()
 
 
-    # Q1.
+    # # Q1.
 
-    ### Init the perceptron ###
-    p1 = Perceptron.Perceptron(48, 0.5, 0.01)
+    # ### Init the perceptron ###
+    # p1 = Perceptron.Perceptron(48, 0.5, 0.01)
 
-    # Apprentissage
-    count = p1.learnErr(0, dataset.data, True)
-    print(f"appris en {count} tours.")
+    # # Apprentissage
+    # count, errors = p1.learnErr(0, dataset.data, True)
+    # print(f"appris en {count} tours.")
+    # plotErrors(errors)
 
-    generalizationNoise(p1, dataset)
+    # generalizationNoise(p1, dataset)
     
 
     # # Q2.
 
     # ### Init the perceptron ###
-    # p2 = perceptron.Perceptron(48, 0.5, 0.01)
+    # p2 = Perceptron.Perceptron(48, 0.5, 0.01)
 
     # # Apprentissage
-    # count = p2.learnErr(0.001, dataset.data, False)
+    # count, errors = p2.learnErr(0.001, dataset.data, False)
     # print(f"appris en {count} tours.")
+    # plotErrors(errors)
 
     # generalizationNoise(p2, dataset)
 
 
-    # # Q3.
-    # # 2 approaches:
-    # # - 1) training each perceptron individually
-    # # - 2) training the model as a whole, updating the two faulty perceptrons when an error is made
+    # Q3.
+    # 2 approaches:
+    # - 1) training each perceptron individually
+    # - 2) training the model as a whole, updating the two faulty perceptrons when an error is made
 
-    # ### Sorting the dataset for human readability and ploting
+    ### Sorting the dataset for human readability and ploting
 
-    # dataset.data.sort(key=lambda instance: instance[1])
+    dataset.data.sort(key=lambda instance: instance[1])
 
-    # ### Init the perceptrons ###
+    ### Init the perceptrons ###
 
-    # network_1 = Network.Network([Perceptron.Perceptron(48, 0.5, 0.01) for i in range(10)])
-    # network_2 = Network.Network([Perceptron.Perceptron(48, 0.5, 0.01) for i in range(10)])
+    network_1 = Network.Network([Perceptron.Perceptron(48, 0.5, 0.01) for i in range(10)])
+    network_2 = Network.Network([Perceptron.Perceptron(48, 0.5, 0.01) for i in range(10)])
     
     # ### Approach n°1 ###
 
@@ -216,8 +226,9 @@ if __name__ == '__main__':
 
         
     #     ### Apprentissage
-    #     count = perceptron.learnErr(0.001, dataset_train.data)
+    #     count, errors = perceptron.learnErr(0.001, dataset_train.data)
     #     print(f"Perceptron n°{i}, apprentissage en {count} tours.")
+    #     plotErrors(errors)
 
     #     perceptron.export(PERCEPTRON_FOLDER, f"perceptron{i}.py")
 
@@ -227,14 +238,15 @@ if __name__ == '__main__':
     # generalizationNoise(network_1, dataset)
 
 
-    # ### Approach n°2 ###
+    ### Approach n°2 ###
 
-    # count = network_2.learnErr(0.001, dataset.data)
+    count, errors = network_2.learnErr(0.001, dataset.data)
+    plotErrors(errors)
 
 
-    # print(f"Learned in {count} turns.")
+    print(f"Learned in {count} turns.")
 
-    # generalizationNoise(network_2, dataset)
+    generalizationNoise(network_2, dataset)
 
 
 

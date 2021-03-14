@@ -93,6 +93,8 @@ class Perceptron():
 
         totalErr = error_max + 1 # Just some init trickery
         count = 0
+
+        errors = []
         
         while totalErr > error_max:
 
@@ -110,9 +112,12 @@ class Perceptron():
 
                 totalErr += abs(error)
 
+            
+            errors.append(totalErr)
+
             # print(totalErr)
         
-        return count
+        return count, errors
 
     def export(self, path, filename):
         """ Exports the perceptron data as python variables in a custom file.
