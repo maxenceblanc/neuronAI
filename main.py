@@ -16,7 +16,9 @@ import random as rd
 import matplotlib.pyplot as plt
 
 # CUSTOM IMPORTS
-import perceptron
+import Dataset
+import Perceptron
+import Network
 
 
 ''' TO DO LIST
@@ -40,67 +42,10 @@ prévisions : le réseau arrive a une erreur totale de 0 (en valeur absolue) en 
 ''' NOTES
 '''
 
-####################################################
-###################| CLASSES |######################
-####################################################
-
-class Dataset():
-    """
-    """
-
-    def __init__(self):
-
-        self.data = None
-
-
-    def __repr__(self):
-        chain = "### Dataset ###\n"
-
-        return chain
-
-    def shuffle(self):
-        rd.shuffle(self.data)
-
-    def pickRandomData(self):
-        return rd.choice(self.data)
-
-
-    def datasetFromFiles(self, path):
-
-        filenames = getFilenames(path)
-        data = [fileToArray(path, filename) for filename in filenames]
-
-        self.data = data
-
-    
 
 ####################################################
 ##################| FUNCTIONS |#####################
 ####################################################
-
-def fileToArray(path, filename):
-    """ takes a filename, returns the data in an array + the expected label.
-    """
-
-    path = os.path.join(DATASET_PATH, filename)
-
-    with open(path) as data:
-        content = list(data.read())
-
-    clean = [char for char in content if char != '\n']
-    ans = int(clean[-1])
-
-    converted = [1 if char == '*' else 0 for char in clean]
-
-
-    return (np.array(converted[:-1]), ans)
-
-
-def getFilenames(path):
-    """
-    """
-
-    return [filename for filename in os.listdir(path) if os.path.isfile(os.path.join(path, filename))]
 
 
 def noiseData(ref, percent):
@@ -202,7 +147,7 @@ DATASET_PATH = os.path.join(DATASET_FOLDER, DATASET_NAME)
 
 PERCEPTRON_FOLDER = "perceptrons"
 
-RANDOM_SEED = 0
+RANDOM_SEED = None
 
 ####################################################
 ####################| PROGRAM |#####################
@@ -216,7 +161,7 @@ if __name__ == '__main__':
 
     ### Preparing the dataset ###
 
-    dataset = Dataset()
+    dataset = Dataset.Dataset()
     dataset.datasetFromFiles(DATASET_PATH)
     dataset.shuffle()
 
@@ -255,17 +200,18 @@ if __name__ == '__main__':
     dataset.data.sort(key=lambda instance: instance[1])
 
     ### Init the perceptrons ###
-    
-    perceptrons = [perceptron.Perceptron(48, 0.5, 0.01) for i in range(10)]
+
+    network_1 = Network.Network([Perceptron.Perceptron(48, 0.5, 0.01) for i in range(10)])
+    network_2 = Network.Network([Perceptron.Perceptron(48, 0.5, 0.01) for i in range(10)])
     
     ### Approach n°1 ###
 
-    for i, perceptron in enumerate(perceptrons):
+    for i, perceptron in enumerate(network_1.perceptrons):
 
         print(f"Generating training set for perceptron {i} ...")
 
         # Tweaking dataset for approach n°1:
-        dataset_train = Dataset()
+        dataset_train = Dataset.Dataset()
         dataset_train.data = []
         
         for instance in dataset.data:
@@ -287,20 +233,22 @@ if __name__ == '__main__':
 
         perceptron.export(PERCEPTRON_FOLDER, f"perceptron{i}.py")
 
-        # generalizationNoise(perceptron, dataset_train)
-
-    for i in range(len(dataset.data)):
-
-        print(f"Test on {i} :")
-
-        perceptrons_ans = [perceptron.evaluate(dataset.data[i][0]) for perceptron in perceptrons]
-        print(perceptrons_ans)
-        print(np.argmax(perceptrons_ans))
-
-        print()
+        generalizationNoise(perceptron, dataset_train)
 
 
-        
+    generalizationNoise(network_1, dataset)
+
+
+    ### Approach n°2 ###
+
+    count = network_2.learnErr(0.001, dataset.data)
+
+
+    print(f"Learned in {count} turns.")
+
+    generalizationNoise(network_2, dataset)
+
+
 
     
 
